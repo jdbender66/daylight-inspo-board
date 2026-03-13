@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import TweetEmbed from "@/components/TweetEmbed";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import DaylightLogo from "@/components/DaylightLogo";
@@ -8,6 +8,12 @@ import { categories, inspoItems, InspoItem } from "@/data/inspo";
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState("all");
+  const [dark, setDark] = useState(false);
+
+  // Apply dark class to <html> so CSS vars cascade everywhere
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+  }, [dark]);
 
   const filteredItems = useMemo(() => {
     if (activeCategory === "all") return inspoItems;
@@ -16,7 +22,7 @@ export default function Home() {
 
   return (
     <div
-      style={{ minHeight: "100vh", backgroundColor: "var(--daylight-beige)" }}
+      style={{ minHeight: "100vh", backgroundColor: "var(--daylight-beige)", transition: "background-color 0.2s ease" }}
     >
       {/* ── Fixed Header ──────────────────────────────────────────────────── */}
       <header
@@ -26,6 +32,7 @@ export default function Home() {
           zIndex: 50,
           backgroundColor: "var(--daylight-beige)",
           borderBottom: "1px solid var(--daylight-border)",
+          transition: "background-color 0.2s ease, border-color 0.2s ease",
         }}
       >
         {/* Logo row */}
@@ -46,10 +53,61 @@ export default function Home() {
               fontSize: 22,
               color: "var(--daylight-dark)",
               letterSpacing: "0.01em",
+              flex: 1,
+              transition: "color 0.2s ease",
             }}
           >
             Daylight Inspo Board
           </span>
+
+          {/* Dark mode toggle */}
+          <button
+            onClick={() => setDark((d) => !d)}
+            aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+            title={dark ? "Light mode" : "Dark mode"}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 36,
+              height: 36,
+              borderRadius: 8,
+              border: "1px solid var(--daylight-border)",
+              backgroundColor: "transparent",
+              cursor: "pointer",
+              color: "var(--daylight-mid)",
+              transition: "all 0.15s ease",
+              flexShrink: 0,
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                "var(--daylight-border)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                "transparent";
+            }}
+          >
+            {dark ? (
+              // Sun icon
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="4"/>
+                <line x1="12" y1="2" x2="12" y2="6"/>
+                <line x1="12" y1="18" x2="12" y2="22"/>
+                <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/>
+                <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
+                <line x1="2" y1="12" x2="6" y2="12"/>
+                <line x1="18" y1="12" x2="22" y2="12"/>
+                <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/>
+                <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
+              </svg>
+            ) : (
+              // Moon icon
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+            )}
+          </button>
         </div>
 
         {/* Nav tabs */}
@@ -113,6 +171,7 @@ export default function Home() {
               color: "var(--daylight-mid)",
               letterSpacing: "0.06em",
               textTransform: "uppercase",
+              transition: "color 0.2s ease",
             }}
           >
             {filteredItems.length} post{filteredItems.length !== 1 ? "s" : ""}
@@ -120,13 +179,13 @@ export default function Home() {
         </div>
 
         {/* Masonry-style grid */}
-        <InspoGrid items={filteredItems} />
+        <InspoGrid items={filteredItems} dark={dark} />
       </main>
     </div>
   );
 }
 
-function InspoGrid({ items }: { items: InspoItem[] }) {
+function InspoGrid({ items, dark }: { items: InspoItem[]; dark: boolean }) {
   return (
     <div
       style={{
@@ -135,13 +194,13 @@ function InspoGrid({ items }: { items: InspoItem[] }) {
       }}
     >
       {items.map((item) => (
-        <InspoCard key={item.id} item={item} />
+        <InspoCard key={item.id} item={item} dark={dark} />
       ))}
     </div>
   );
 }
 
-function InspoCard({ item }: { item: InspoItem }) {
+function InspoCard({ item, dark }: { item: InspoItem; dark: boolean }) {
   return (
     <div
       style={{
@@ -149,14 +208,15 @@ function InspoCard({ item }: { item: InspoItem }) {
         marginBottom: 20,
         borderRadius: 14,
         overflow: "hidden",
-        backgroundColor: "#fff",
+        backgroundColor: "var(--daylight-card)",
         border: "1px solid var(--daylight-border)",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+        boxShadow: "0 1px 4px var(--daylight-header-shadow)",
+        transition: "background-color 0.2s ease, border-color 0.2s ease",
       }}
     >
       <div style={{ padding: item.type === "youtube" ? 12 : 0 }}>
         {item.type === "tweet" ? (
-          <TweetEmbed url={item.url} />
+          <TweetEmbed url={item.url} dark={dark} />
         ) : (
           <YouTubeEmbed videoId={item.url} />
         )}
@@ -171,6 +231,7 @@ function InspoCard({ item }: { item: InspoItem }) {
             justifyContent: "space-between",
             alignItems: "flex-end",
             gap: 8,
+            transition: "border-color 0.2s ease",
           }}
         >
           {item.note ? (
@@ -182,6 +243,7 @@ function InspoCard({ item }: { item: InspoItem }) {
                 fontStyle: "italic",
                 lineHeight: 1.4,
                 flex: 1,
+                transition: "color 0.2s ease",
               }}
             >
               {item.note}

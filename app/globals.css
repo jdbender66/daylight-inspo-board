@@ -35,6 +35,18 @@
   --daylight-dark: #1a1a1a;
   --daylight-mid: #8a8070;
   --daylight-border: #ddd5c5;
+  --daylight-card: #ffffff;
+  --daylight-header-shadow: rgba(0, 0, 0, 0.04);
+}
+
+html.dark {
+  --daylight-beige: #141414;
+  --daylight-orange: #f05a28;
+  --daylight-dark: #f0ebe0;
+  --daylight-mid: #a09585;
+  --daylight-border: #2e2e2e;
+  --daylight-card: #1f1f1f;
+  --daylight-header-shadow: rgba(0, 0, 0, 0.2);
 }
 
 * {
@@ -49,6 +61,11 @@ body {
   color: var(--daylight-dark);
   font-family: "Aeonik", sans-serif;
   overflow-x: hidden;
+}
+
+/* Smooth dark mode transitions */
+html {
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Twitter embed theming */
