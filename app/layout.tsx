@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Daylight Inspo Board",
-  description: "A collection of inspiration from the Daylight team",
+  description: "Inspiration collected by the Daylight team",
 };
 
 export default function RootLayout({
