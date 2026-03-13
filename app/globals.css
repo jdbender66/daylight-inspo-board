@@ -37,6 +37,8 @@
   --daylight-border: #ddd5c5;
   --daylight-card: #ffffff;
   --daylight-header-shadow: rgba(0, 0, 0, 0.04);
+  --card-edge: #c4baa8;       /* hard shadow = card's physical edge */
+  --card-shadow: rgba(0, 0, 0, 0.09);
 }
 
 html.dark {
@@ -47,6 +49,8 @@ html.dark {
   --daylight-border: #2e2e2e;
   --daylight-card: #1f1f1f;
   --daylight-header-shadow: rgba(0, 0, 0, 0.2);
+  --card-edge: #3d3d3d;
+  --card-shadow: rgba(0, 0, 0, 0.35);
 }
 
 * {

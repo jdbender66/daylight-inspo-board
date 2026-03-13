@@ -202,20 +202,29 @@ function InspoGrid({ items, dark }: { items: InspoItem[]; dark: boolean }) {
 }
 
 function InspoCard({ item, dark }: { item: InspoItem; dark: boolean }) {
+  const [hovered, setHovered] = useState(false);
   return (
     <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
         breakInside: "avoid",
-        marginBottom: 20,
+        marginBottom: 24,
         borderRadius: 14,
         overflow: "hidden",
         backgroundColor: "var(--daylight-card)",
         border: "1px solid var(--daylight-border)",
-        boxShadow: "0 1px 4px var(--daylight-header-shadow)",
-        transition: "background-color 0.2s ease, border-color 0.2s ease",
+        // Hard offset = card's physical edge/thickness; soft shadow = ambient depth
+        boxShadow: hovered
+          ? "5px 7px 0 var(--card-edge), 4px 10px 28px var(--card-shadow)"
+          : "4px 5px 0 var(--card-edge), 2px 8px 20px var(--card-shadow)",
+        transform: hovered ? "translate(-2px, -3px)" : "translate(0, 0)",
+        transition: "transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease, border-color 0.2s ease",
+        cursor: "default",
       }}
     >
-      <div style={{ padding: item.type === "youtube" ? 12 : 0 }}>
+      {/* Small top padding prevents tweet iframe border from touching card border */}
+      <div style={{ padding: item.type === "tweet" ? "6px 0 0" : item.type === "youtube" ? 12 : 0 }}>
         {item.type === "tweet" ? (
           <TweetEmbed
                   url={item.url}
