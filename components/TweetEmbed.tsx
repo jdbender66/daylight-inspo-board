@@ -1,64 +1,108 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 declare global {
   interface Window {
     twttr?: {
+      ready: (cb: (tw: NonNullable<Window["twttr"]>) => void) => void;
       widgets: {
-        load: (element?: HTMLElement | null) => Promise<HTMLElement[]>;
+        createTweet: (
+          tweetId: string,
+          container: HTMLElement,
+          options?: Record<string, unknown>
+        ) => Promise<HTMLElement | undefined>;
       };
     };
   }
 }
 
-interface TweetEmbedProps {
+export default function TweetEmbed({
+  url,
+  dark,
+}: {
   url: string;
   dark?: boolean;
-}
-
-/**
- * Renders a blockquote that Twitter's widget.js enhances into a full embed.
- * Calls twttr.widgets.load(container) after mount so React-rendered blockquotes
- * get processed even after widget.js has already run its initial scan.
- */
-export default function TweetEmbed({ url, dark }: TweetEmbedProps) {
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
+    // Extract numeric tweet ID from x.com or twitter.com URL
+    const tweetId = url.match(/\/status\/(\d+)/)?.[1];
+    if (!tweetId) return;
+
     let cancelled = false;
 
-    function tryLoad() {
-      if (cancelled) return;
-      if (window.twttr?.widgets) {
-        window.twttr.widgets.load(container);
-      } else {
-        // widget.js not ready yet — poll until it is
-        const t = setTimeout(tryLoad, 150);
-        return () => clearTimeout(t);
-      }
+    function doCreate(tw: NonNullable<Window["twttr"]>) {
+      if (cancelled || !container) return;
+      container.innerHTML = "";
+      tw.widgets
+        .createTweet(tweetId!, container, {
+          theme: dark ? "dark" : "light",
+          dnt: true,
+          conversation: "none",
+        })
+        .then(() => {
+          if (!cancelled) setLoaded(true);
+        });
     }
 
-    tryLoad();
+    if (window.twttr) {
+      window.twttr.ready(doCreate);
+    } else {
+      // widget.js not yet on the page — poll until it is
+      const timer = setInterval(() => {
+        if (window.twttr) {
+          clearInterval(timer);
+          window.twttr.ready(doCreate);
+        }
+      }, 150);
+      return () => {
+        cancelled = true;
+        clearInterval(timer);
+      };
+    }
 
     return () => {
       cancelled = true;
     };
+    // Intentionally exclude `dark` — tweets don't re-render on theme toggle
+    // (avoids flashing all 120 embeds when toggling dark mode)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url]);
 
   return (
-    <div ref={containerRef} style={{ minHeight: 120 }}>
-      <blockquote
-        className="twitter-tweet"
-        data-dnt="true"
-        data-theme={dark ? "dark" : "light"}
-        style={{ margin: "0 auto" }}
-      >
-        <a href={url}>View tweet →</a>
-      </blockquote>
+    <div style={{ position: "relative", minHeight: 200 }}>
+      {/* Loading placeholder */}
+      {!loaded && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              width: 20,
+              height: 20,
+              border: "2px solid var(--daylight-border)",
+              borderTopColor: "var(--daylight-orange)",
+              borderRadius: "50%",
+              animation: "spin 0.7s linear infinite",
+            }}
+          />
+        </div>
+      )}
+      {/* Tweet mounts here */}
+      <div ref={containerRef} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
