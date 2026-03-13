@@ -5,6 +5,7 @@ import TweetEmbed from "@/components/TweetEmbed";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import DaylightLogo from "@/components/DaylightLogo";
 import { categories, inspoItems, InspoItem } from "@/data/inspo";
+import oembedCache from "@/data/oembed-cache.json";
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -216,7 +217,11 @@ function InspoCard({ item, dark }: { item: InspoItem; dark: boolean }) {
     >
       <div style={{ padding: item.type === "youtube" ? 12 : 0 }}>
         {item.type === "tweet" ? (
-          <TweetEmbed url={item.url} dark={dark} />
+          <TweetEmbed
+                  url={item.url}
+                  oembedHtml={(oembedCache as Record<string, string>)[item.id]}
+                  dark={dark}
+                />
         ) : (
           <YouTubeEmbed videoId={item.url} />
         )}
