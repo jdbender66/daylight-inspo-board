@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Aeonik";
+  src: url("/fonts/aeonikpro-regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Aeonik";
+  src: url("/fonts/aeonikpro-medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Aeonik";
+  src: url("/fonts/aeonikpro-bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "FeatureDeck";
+  src: url("/fonts/FeatureDeck-Regular-Web.woff2") format("woff2"),
+    url("/fonts/FeatureDeck-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+:root {
+  --daylight-beige: #f0ebe0;
+  --daylight-orange: #f05a28;
+  --daylight-dark: #1a1a1a;
+  --daylight-mid: #8a8070;
+  --daylight-border: #ddd5c5;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  background-color: var(--daylight-beige);
+  color: var(--daylight-dark);
+  font-family: "Aeonik", sans-serif;
+  overflow-x: hidden;
+}
+
+/* Twitter embed theming */
+.twitter-tweet {
+  margin: 0 auto !important;
+}
+
+/* YouTube embed */
+.youtube-embed {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+}
+
+.youtube-embed iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+}
