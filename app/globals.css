@@ -37,8 +37,8 @@
   --daylight-border: #ddd5c5;
   --daylight-card: #ffffff;
   --daylight-header-shadow: rgba(0, 0, 0, 0.04);
-  --card-edge: #c4baa8;       /* hard shadow = card's physical edge */
-  --card-shadow: rgba(0, 0, 0, 0.09);
+  --card-face-right: #d4c9b8;   /* right side face of prism */
+  --card-face-bottom: #bfb4a2;  /* bottom face — slightly darker */
 }
 
 html.dark {
@@ -49,8 +49,8 @@ html.dark {
   --daylight-border: #2e2e2e;
   --daylight-card: #1f1f1f;
   --daylight-header-shadow: rgba(0, 0, 0, 0.2);
-  --card-edge: #3d3d3d;
-  --card-shadow: rgba(0, 0, 0, 0.35);
+  --card-face-right: #2d2d2d;
+  --card-face-bottom: #252525;
 }
 
 * {
@@ -70,6 +70,80 @@ body {
 /* Smooth dark mode transitions */
 html {
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ── 3-D card prism ──────────────────────────────────────────────────────────
+   .inspo-card-wrapper  — outer shell; holds ::before/::after side faces
+                          overflow: visible so faces aren't clipped
+   .inspo-card-inner    — clips card content with border-radius + overflow:hidden
+
+   Depth direction is down-right (8px).  Two faces share the back corner.
+
+   Right face (::after)
+     Parallelogram connecting the card's right edge → back-right edge
+     clip-path corners (in element space, element = top:0 right:-8px w:8 h:100%+8):
+       (0,0)            card top-right
+       (100%, 8px)      back top-right
+       (100%, 100%)     back bottom-right  ← shared corner
+       (0, calc(100%-8px))  card bottom-right
+
+   Bottom face (::before)
+     Parallelogram connecting the card's bottom edge → back-bottom edge
+     clip-path corners (element = bottom:-8px left:0 w:100%+8 h:8):
+       (0, 0)                card bottom-left
+       (calc(100%-8px), 0)   card bottom-right
+       (100%, 100%)          back bottom-right  ← shared corner
+       (8px, 100%)           back bottom-left
+──────────────────────────────────────────────────────────────────────────── */
+.inspo-card-wrapper {
+  position: relative;
+  break-inside: avoid;
+  margin-bottom: 24px;
+  transition: transform 0.15s ease;
+  cursor: default;
+}
+
+.inspo-card-wrapper:hover {
+  transform: translate(-3px, -3px);
+}
+
+/* Right face */
+.inspo-card-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -8px;
+  width: 8px;
+  height: calc(100% + 8px);
+  background: var(--card-face-right);
+  clip-path: polygon(0 0, 100% 8px, 100% 100%, 0 calc(100% - 8px));
+  pointer-events: none;
+  transition: background 0.2s ease;
+}
+
+/* Bottom face */
+.inspo-card-wrapper::before {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: calc(100% + 8px);
+  height: 8px;
+  background: var(--card-face-bottom);
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 100%, 8px 100%);
+  pointer-events: none;
+  transition: background 0.2s ease;
+}
+
+/* Inner card — clips tweet iframes etc., sits above the side faces */
+.inspo-card-inner {
+  position: relative;
+  z-index: 1;
+  background: var(--daylight-card);
+  border: 1px solid var(--daylight-border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 /* ── Twitter blockquote — styled before widget.js enhances it ────────────────
