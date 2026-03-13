@@ -16,6 +16,27 @@ export default function Home() {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 
+  // Batch-enhance all pre-rendered oEmbed blockquotes once on mount.
+  // Per-component calls in TweetEmbed handle individual timing, but this
+  // global call catches everything in one pass once the page is ready.
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tw = (window as any).twttr;
+    function loadAll() {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).twttr?.widgets?.load();
+    }
+    if (tw) {
+      tw.ready(loadAll);
+    } else {
+      const t = setInterval(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((window as any).twttr) { clearInterval(t); (window as any).twttr.ready(loadAll); }
+      }, 200);
+      return () => clearInterval(t);
+    }
+  }, []);
+
   const filteredItems = useMemo(() => {
     if (activeCategory === "all") return inspoItems;
     return inspoItems.filter((item) => item.category === activeCategory);
@@ -64,11 +85,12 @@ export default function Home() {
             <span
               style={{
                 fontFamily: "'Aeonik', sans-serif",
-                fontSize: 12,
+                fontSize: 13,
                 fontStyle: "italic",
-                color: "var(--daylight-mid)",
+                color: "var(--daylight-dark)",
+                opacity: 0.45,
                 display: "block",
-                marginTop: 2,
+                marginTop: 3,
                 transition: "color 0.2s ease",
               }}
             >

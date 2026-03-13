@@ -72,9 +72,44 @@ html {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Twitter embed theming */
-.twitter-tweet {
-  margin: 0 auto !important;
+/* ── Twitter blockquote — styled before widget.js enhances it ────────────────
+   Once widget.js runs it replaces the blockquote with an iframe, so these
+   styles only show during the brief loading window. Without them the raw
+   blockquote text looks broken/unstyled. */
+blockquote.twitter-tweet {
+  margin: 0 !important;
+  padding: 16px 18px;
+  background: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #0f1419;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: none !important;
+}
+
+blockquote.twitter-tweet p {
+  margin: 0 0 10px;
+  color: #0f1419;
+  font-weight: 400;
+}
+
+/* The "— Author (@handle) Date" attribution line */
+blockquote.twitter-tweet > a:last-child {
+  font-size: 13px;
+  color: #536471;
+}
+
+blockquote.twitter-tweet a {
+  color: #1d9bf0;
+  text-decoration: none;
+}
+
+/* After widget.js enhances — reset margin so iframe sits flush */
+.twitter-tweet-rendered {
+  margin: 0 !important;
 }
 
 /* YouTube embed */
