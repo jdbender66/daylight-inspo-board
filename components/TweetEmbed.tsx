@@ -31,7 +31,6 @@ export default function TweetEmbed({
     const container = containerRef.current;
     if (!container) return;
 
-    // Extract numeric tweet ID from x.com or twitter.com URL
     const tweetId = url.match(/\/status\/(\d+)/)?.[1];
     if (!tweetId) return;
 
@@ -51,33 +50,44 @@ export default function TweetEmbed({
         });
     }
 
-    if (window.twttr) {
-      window.twttr.ready(doCreate);
-    } else {
-      // widget.js not yet on the page — poll until it is
-      const timer = setInterval(() => {
-        if (window.twttr) {
-          clearInterval(timer);
-          window.twttr.ready(doCreate);
-        }
-      }, 150);
-      return () => {
-        cancelled = true;
-        clearInterval(timer);
-      };
+    function startEmbed() {
+      if (window.twttr) {
+        window.twttr.ready(doCreate);
+      } else {
+        // widget.js not loaded yet — poll until ready
+        const timer = setInterval(() => {
+          if (window.twttr) {
+            clearInterval(timer);
+            window.twttr.ready(doCreate);
+          }
+        }, 150);
+      }
     }
+
+    // Only start loading when the card is within 400px of the viewport.
+    // This prevents all 120+ tweets from firing simultaneously on page load.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          observer.disconnect();
+          startEmbed();
+        }
+      },
+      { rootMargin: "400px" }
+    );
+
+    observer.observe(container);
 
     return () => {
       cancelled = true;
+      observer.disconnect();
     };
-    // Intentionally exclude `dark` — tweets don't re-render on theme toggle
-    // (avoids flashing all 120 embeds when toggling dark mode)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url]);
 
   return (
     <div style={{ position: "relative", minHeight: 200 }}>
-      {/* Loading placeholder */}
+      {/* Spinner shown while loading */}
       {!loaded && (
         <div
           style={{
@@ -100,7 +110,6 @@ export default function TweetEmbed({
           />
         </div>
       )}
-      {/* Tweet mounts here */}
       <div ref={containerRef} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
