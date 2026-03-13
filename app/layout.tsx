@@ -4,7 +4,18 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Daylight Inspo Board",
-  description: "Inspiration collected by the Daylight team",
+  description: "A visual compilation of all the posts shared in the Daylight Slack #inspo channel",
+  openGraph: {
+    title: "Daylight Inspo Board",
+    description: "A visual compilation of all the posts shared in the Daylight Slack #inspo channel",
+    images: [{ url: "/socialshare.png" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Daylight Inspo Board",
+    description: "A visual compilation of all the posts shared in the Daylight Slack #inspo channel",
+    images: ["/socialshare.png"],
+  },
 };
 
 export default function RootLayout({
