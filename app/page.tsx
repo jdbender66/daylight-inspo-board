@@ -48,18 +48,33 @@ export default function Home() {
           }}
         >
           <DaylightLogo size={30} />
-          <span
-            style={{
-              fontFamily: "'FeatureDeck', serif",
-              fontSize: 22,
-              color: "var(--daylight-dark)",
-              letterSpacing: "0.01em",
-              flex: 1,
-              transition: "color 0.2s ease",
-            }}
-          >
-            Daylight Inspo Board
-          </span>
+          <div style={{ flex: 1 }}>
+            <span
+              style={{
+                fontFamily: "'FeatureDeck', serif",
+                fontSize: 22,
+                color: "var(--daylight-dark)",
+                letterSpacing: "0.01em",
+                display: "block",
+                transition: "color 0.2s ease",
+              }}
+            >
+              Daylight Inspo Board
+            </span>
+            <span
+              style={{
+                fontFamily: "'Aeonik', sans-serif",
+                fontSize: 12,
+                fontStyle: "italic",
+                color: "var(--daylight-mid)",
+                display: "block",
+                marginTop: 2,
+                transition: "color 0.2s ease",
+              }}
+            >
+              A visual compilation of all the posts shared in the Daylight Slack #inspo channel
+            </span>
+          </div>
 
           {/* Dark mode toggle */}
           <button
