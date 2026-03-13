@@ -7,40 +7,57 @@ import DaylightLogo from "@/components/DaylightLogo";
 import { categories, inspoItems, InspoItem } from "@/data/inspo";
 import oembedCache from "@/data/oembed-cache.json";
 
+const PAGE_SIZE = 18;
+
+// Tells widget.js to process any new twitter-tweet blockquotes on the page
+function enhanceTweets() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tw = (window as any).twttr;
+  if (tw?.widgets) {
+    tw.widgets.load();
+  } else {
+    const t = setInterval(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((window as any).twttr?.widgets) {
+        clearInterval(t);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).twttr.widgets.load();
+      }
+    }, 200);
+  }
+}
+
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [dark, setDark] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   // Apply dark class to <html> so CSS vars cascade everywhere
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 
-  // Batch-enhance all pre-rendered oEmbed blockquotes once on mount.
-  // Per-component calls in TweetEmbed handle individual timing, but this
-  // global call catches everything in one pass once the page is ready.
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tw = (window as any).twttr;
-    function loadAll() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (window as any).twttr?.widgets?.load();
-    }
-    if (tw) {
-      tw.ready(loadAll);
-    } else {
-      const t = setInterval(() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if ((window as any).twttr) { clearInterval(t); (window as any).twttr.ready(loadAll); }
-      }, 200);
-      return () => clearInterval(t);
-    }
-  }, []);
+  // Enhance tweets on first mount
+  useEffect(() => { enhanceTweets(); }, []);
 
   const filteredItems = useMemo(() => {
     if (activeCategory === "all") return inspoItems;
     return inspoItems.filter((item) => item.category === activeCategory);
   }, [activeCategory]);
+
+  // Reset pagination when category changes
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [activeCategory]);
+
+  const visibleItems = filteredItems.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredItems.length;
+
+  function loadMore() {
+    setVisibleCount((n) => n + PAGE_SIZE);
+    // Give React a tick to render the new cards, then enhance them
+    setTimeout(enhanceTweets, 100);
+  }
 
   return (
     <div
@@ -212,12 +229,46 @@ export default function Home() {
               transition: "color 0.2s ease",
             }}
           >
-            {filteredItems.length} post{filteredItems.length !== 1 ? "s" : ""}
+            {visibleCount < filteredItems.length
+              ? `${visibleCount} of ${filteredItems.length} posts`
+              : `${filteredItems.length} post${filteredItems.length !== 1 ? "s" : ""}`}
           </p>
         </div>
 
         {/* Masonry-style grid */}
-        <InspoGrid items={filteredItems} dark={dark} />
+        <InspoGrid items={visibleItems} dark={dark} />
+
+        {/* Load more */}
+        {hasMore && (
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 48 }}>
+            <button
+              onClick={loadMore}
+              style={{
+                fontFamily: "'Aeonik', sans-serif",
+                fontWeight: 500,
+                fontSize: 14,
+                padding: "12px 32px",
+                borderRadius: 10,
+                border: "1px solid var(--daylight-border)",
+                backgroundColor: "var(--daylight-card)",
+                color: "var(--daylight-dark)",
+                cursor: "pointer",
+                boxShadow: "3px 4px 0 var(--card-edge)",
+                transition: "transform 0.1s ease, box-shadow 0.1s ease",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.transform = "translate(-1px, -1px)";
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = "4px 5px 0 var(--card-edge)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.transform = "translate(0, 0)";
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = "3px 4px 0 var(--card-edge)";
+              }}
+            >
+              Load more ({filteredItems.length - visibleCount} remaining)
+            </button>
+          </div>
+        )}
       </main>
     </div>
   );
